@@ -1,0 +1,15 @@
+#!/bin/bash
+PYTHON="python3" # Pode-se modificar esta variavel, se necessario
+PROGRAM="pwordcount.py" # Nao pode modificar esta variavel
+#TO-DO: Validar o número de argumentos antes de chamar o Python (Ver TP02)
+#TO-DO: Validar que o ficheiro $PROGRAM existe antes de chama-lo (Ver TP02)
+if [ ! -e "$PROGRAM" ]; then
+  echo "Error: '$PROGRAM' não existe."
+  exit 1
+fi
+
+if [ "$#" -lt 2 ]; then
+  echo "Utilização: $0 [-m t|u|o] [-p n] [-i s] [-l f] file(s)…"
+  exit 1
+fi
+${PYTHON} ${PROGRAM} $@
