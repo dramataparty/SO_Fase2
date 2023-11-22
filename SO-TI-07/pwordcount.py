@@ -125,8 +125,6 @@ def main(args):
     print('  Nível de Paralelização:', parallel)
     print('  Ficheiros de Entrada:', input_files, "\n")
     diveconquer(input_files,mode,parallel)
-
-       
-   
+ 
 if __name__ == "__main__":
     main(sys.argv[1:])
