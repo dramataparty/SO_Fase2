@@ -8,6 +8,7 @@ import sys
 import argparse
 import multiprocessing
 import os
+import signal
 #TO-DO: testar e reimplementar se necessario
 
 def special_cleaner(unclean_words):
@@ -61,28 +62,26 @@ def occurence_counter(files, n, n_now):
 def diveconquer(input_files, mode, parallel):
     num_files = len(input_files)
     num_processes = parallel  # Use specified number of processes
-    results = []
 
     def worker(start_idx, end_idx, pid, n, n_now):
-        # print(f"Processo {pid} a trabalhar nas linhas {start_idx} até {end_idx - 1}")
         if end_idx - start_idx == 1:
-            print(f"Processo {pid} a trabalhar no ficheiro {input_files[start_idx]}")
+            print(f"Process {pid} is working on the file {input_files[start_idx]}")
         else:
-            print(f"Processo {pid} a trabalhar nos ficheiros {input_files[start_idx]} até {input_files[end_idx - 1]}")
+            print(f"Process {pid} is working on files {input_files[start_idx]} to {input_files[end_idx - 1]}")
+
         result = process_file(input_files[start_idx:end_idx], mode, n, n_now)
-        results.append(result)  # Append the result to the results list
-        
+
     if num_processes > 1 and num_files == 1:
         for i in range(1, num_processes + 1):
             pid = os.fork()
-            
+
             if pid == 0:
+                signal.signal(signal.SIGINT, signal.SIG_DFL)
                 worker(0, 1, os.getpid(), num_processes, i)
                 os._exit(0)
             else:
                 os.wait()
-                
-    
+
     else:
         num_processes = min(parallel, num_files)
         for i in range(num_processes):
@@ -95,8 +94,21 @@ def diveconquer(input_files, mode, parallel):
                 os._exit(0)
             else:
                 os.wait()
-            
-    return results
+
+
+def init_worker():
+    # Ignore SIGINT in child processes
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def signal_handler(signum, frame):
+    # Handle SIGINT in the parent process
+    print("\nReceived SIGINT. Waiting for child processes to finish...")
+    # Perform any necessary cleanup or final calculations
+    sys.exit(0)
+
+
+
 
 def process_file(file, mode, n, n_now):
     if mode == "t":
