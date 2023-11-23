@@ -7,6 +7,7 @@
 import sys
 import argparse
 import multiprocessing
+from multiprocessing import Semaphore
 import os
 import signal
 #TO-DO: testar e reimplementar se necessario
@@ -59,7 +60,7 @@ def occurence_counter(files, n, n_now):
             print(word + ":", count)
     print("")
 
-def diveconquer(input_files, mode, parallel):
+def diveconquer(input_files, mode, parallel, time, output):
     num_files = len(input_files)
     num_processes = parallel  # Use specified number of processes
 
@@ -108,8 +109,6 @@ def signal_handler(signum, frame):
     sys.exit(0)
 
 
-
-
 def process_file(file, mode, n, n_now):
     if mode == "t":
         return word_counter(file, n, n_now)
@@ -123,7 +122,7 @@ def parse_arguments():
     parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help= "define o modo de execução")
     parser.add_argument("-p", dest="parallel", type=int, default=0, help= "define nivel de paralelização")
     parser.add_argument("-i", dest="time", type=int, default=3, help="define o intervalo de tempo")
-    parser.add_argument("-l", dest="output", default="" ,help="define o ficheiro para onde os resultados irão estar")
+    parser.add_argument("-l", dest="output", default="" ,help="define o ficheiro para onde os resultados irão estar. Extensão .log")
     parser.add_argument("input_files",nargs='+', help="Introduza ficheiro(s)")
     return parser.parse_args()
 
@@ -132,11 +131,13 @@ def main(args):
     input_files = args.input_files
     mode = args.mode
     parallel = args.parallel
+    time = args.time
+    output = args.output
     print('Programa: pwordcount.py')
     print('Argumentos: ', args)
     print('  Nível de Paralelização:', parallel)
     print('  Ficheiros de Entrada:', input_files, "\n")
-    diveconquer(input_files,mode,parallel)
+    diveconquer(input_files,mode,parallel, time, output)
  
 if __name__ == "__main__":
     main(sys.argv[1:])
