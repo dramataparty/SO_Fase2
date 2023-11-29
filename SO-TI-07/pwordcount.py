@@ -1,16 +1,19 @@
 ### Grupo: SO-TI-07
-### Aluno 1: Diogo Forte (fc56931
+### Aluno 1: Diogo Forte (fc56931)
 ### Aluno 2: Gonçalo Gouveia (fc60289)
 ### Aluno 3: João Vaz (fc58283)
 
 
 import sys
 import argparse
-import multiprocessing
-from multiprocessing import Semaphore
+from multiprocessing import Process, Value, Array, Queue, Semaphore
 import os
 import signal
-#TO-DO: testar e reimplementar se necessario
+#TO-DO: implementar o file/std output
+
+valuewords = Value("i", 0)
+arraywords = Array("i", 99)
+q = Queue()
 
 def special_cleaner(unclean_words):
     special_chars = '!@#$%^&*()_+[]{}|;:,.<>?/\\"~†–'
@@ -36,15 +39,13 @@ def file_divider(files, n_files, n, n_now):
 def word_counter(files, n, n_now):
     for nf in range(len(files)):
         words = file_divider(files, nf, n, n_now)
-        print(f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(files[nf])/n)} e {int(n_now*count_lines(files[nf])/n)} de {files[nf]}")
-    print("")
+        valuewords.value += len(words)
     
 def unique_word_counter(files, n, n_now):
     for nf in range(len(files)):
         words = file_divider(files, nf, n, n_now)
         unique_words = set(words)
-        print(f"{len(unique_words)} palavras unicas entre as linhas {int((n_now-1)*count_lines(files[nf])/n)} e {int(n_now*count_lines(files[nf])/n)} de {files[nf]}")
-    print("")
+        q.put(unique_words)
 
 def occurence_counter(files, n, n_now):
     for nf in range(len(files)):
@@ -55,46 +56,77 @@ def occurence_counter(files, n, n_now):
                 word_count[word] += 1
             else:
                 word_count[word] = 1
-        print(f"Ocorrências de Palavras Únicas/Diferentes entre as linhas entre as linhas {int((n_now-1)*count_lines(files[nf])/n)} e {int(n_now*count_lines(files[nf])/n)} de {files[nf]}:")
-        for word, count in word_count.items():
-            print(word + ":", count)
-    print("")
+        q.put(word_count)
 
 def diveconquer(input_files, mode, parallel, time, output):
     num_files = len(input_files)
     num_processes = parallel  # Use specified number of processes
+    processes = []
 
-    def worker(start_idx, end_idx, pid, n, n_now):
+    def worker(start_idx, end_idx, n, n_now):
+        pid = os.getpid()
         if end_idx - start_idx == 1:
             print(f"Process {pid} is working on the file {input_files[start_idx]}")
         else:
             print(f"Process {pid} is working on files {input_files[start_idx]} to {input_files[end_idx - 1]}")
 
-        result = process_file(input_files[start_idx:end_idx], mode, n, n_now)
+        process_file(input_files[start_idx:end_idx], mode, n, n_now)
+    
+    def printer(mode, parallel):
+        if mode == "t":
+            print("Número total de Palavras:", valuewords.value)
+        elif mode == "u":
+            uniqueword_sets = []
+            for p in range(parallel):
+                uniqueword_sets += list(q.get())
+            print("Número total de Palavras Únicas:", len(set(uniqueword_sets)))
+        elif mode == "o":
+            occu_count = {}
+            for p in range(parallel):
+                words = q.get()
+                for word in words:
+                    if word in occu_count:
+                        occu_count[word] += words[word]
+                    else:
+                        occu_count[word] = words[word]
+            print("Contagem da Ocorrência de Palavras:")
+            for word, count in occu_count.items():
+                print(word + ":", count)
+            
 
     if num_processes > 1 and num_files == 1:
         for i in range(1, num_processes + 1):
-            pid = os.fork()
+            newprocess = Process(target=worker, args=(0, 1, num_processes, i,))
+            newprocess.start()
+            processes.append(newprocess)
 
-            if pid == 0:
-                signal.signal(signal.SIGINT, signal.SIG_DFL)
-                worker(0, 1, os.getpid(), num_processes, i)
-                os._exit(0)
-            else:
-                os.wait()
+            # if pid == 0:
+            #     signal.signal(signal.SIGINT, signal.SIG_DFL)
+            #     worker(0, 1, os.getpid(), num_processes, i)
+            #     os._exit(0)
+            # else:
+            #     os.wait()
 
     else:
         num_processes = min(parallel, num_files)
         for i in range(num_processes):
             start_idx = i * (num_files // num_processes)
             end_idx = (i + 1) * (num_files // num_processes) if i < num_processes - 1 else num_files
-            pid = os.fork()
+            newprocess = Process(target=worker, args=(start_idx, end_idx, 1, 1,))
+            newprocess.start()
+            processes.append(newprocess)
 
-            if pid == 0:
-                worker(start_idx, end_idx, os.getpid(), 1, 1)
-                os._exit(0)
-            else:
-                os.wait()
+            # if pid == 0:
+            #     worker(start_idx, end_idx, os.getpid(), 1, 1)
+            #     os._exit(0)
+            # else:
+            #     os.wait()
+    
+    for pro in processes:
+        pro.join()
+    
+    printer(mode, parallel)
+    
 
 
 def init_worker():
