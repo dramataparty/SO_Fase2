@@ -1,6 +1,6 @@
 import sys
 import argparse
-import multiprocessing
+from multiprocessing import Process, Value, Array, Queue, Semaphore
 import os
 import signal
 import time
