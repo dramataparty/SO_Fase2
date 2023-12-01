@@ -172,4 +172,4 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Ferramenta para Processar Argumentos")
     parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help="define o modo de execução")
     parser.add_argument("-p", dest="parallel", type=int, default=0, help="define nivel de paralelização")
-    parser.add_argument("-i", dest="time", type=int, default
+    parser.add_argument("-i", dest="time", type=int, default=0)
