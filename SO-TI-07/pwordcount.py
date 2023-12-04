@@ -6,6 +6,14 @@ import signal
 import time
 from datetime import datetime
 
+class ProcessData:
+    def __init__(self):
+        self.lock = Lock()
+        self.exit_event = Event()
+        self.aggregated_results = Array('i', [0, 0, 0, 0, 0])
+        self.elapsed_time = 0
+        self.start_time = 0
+
 def special_cleaner(unclean_words):
     special_chars = '!@#$%^&*()_+[]{}|;:,.<>?/\\"~†–'
     clean_words = [word.translate(str.maketrans('', '', special_chars)).lower() for word in unclean_words if word.strip()]
@@ -165,16 +173,9 @@ def parse_arguments():
     parser.add_argument("-p", dest="parallel", type=int, default=0, help="define nivel de paralelização")
     parser.add_argument("-i", dest="time", type=int, default=0)
     
-
     return parser.parse_args()
 
 if __name__ == "__main__":
-    lock = Lock()
-    exit_event = Event()
-    aggregated_results = Array('i', [0, 0, 0, 0, 0])
-    elapsed_time = 0
-
+    process_data = ProcessData()
     args = parse_arguments()
-
-
-    diveconquer(args.input_files, args.mode, args.parallel, args.time, log_file=None)
+    diveconquer(args.input_files, args.mode, args.parallel, args.time, log_file=None, process_data=process_data)
