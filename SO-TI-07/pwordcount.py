@@ -76,7 +76,7 @@ def process_file(file, mode, n, n_now):
         return occurrence_counter(file, n, n_now)
 
 def diveconquer(input_files, mode, parallel, interval, log_file):
-    global lock, exit_event, aggregated_results, elapsed_time
+    global lock, exit_event, aggregated_results, elapsed_time, start_time
 
     num_files = len(input_files)
     num_processes = min(parallel, num_files)
@@ -160,10 +160,12 @@ def print_aggregated_results():
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Ferramenta para Processar Argumentos")
+    parser.add_argument("input_files", nargs='+', help="input files")
     parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help="define o modo de execução")
     parser.add_argument("-p", dest="parallel", type=int, default=0, help="define nivel de paralelização")
     parser.add_argument("-i", dest="time", type=int, default=0)
-    # Add other command-line arguments as needed
+    
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -173,6 +175,6 @@ if __name__ == "__main__":
     elapsed_time = 0
 
     args = parse_arguments()
-    input_files = ["file1.txt", "file2.txt", "file3.txt"]  # Replace with your actual file list
 
-    diveconquer(input_files, args.mode, args.parallel, args.time, log_file=None)
+
+    diveconquer(args.input_files, args.mode, args.parallel, args.time, log_file=None)
