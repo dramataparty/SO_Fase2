@@ -167,15 +167,14 @@ def print_aggregated_results():
     print(f"Remaining Files: {aggregated_results[4]}")
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Ferramenta para Processar Argumentos")
-    parser.add_argument("input_files", nargs='+', help="input files")
-    parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help="define o modo de execução")
-    parser.add_argument("-p", dest="parallel", type=int, default=0, help="define nivel de paralelização")
-    parser.add_argument("-i", dest="time", type=int, default=0)
-    
+    parser = argparse.ArgumentParser(description="Tool for Processing Arguments")
+    parser.add_argument("input_files", nargs='+', help="Input files")
+    parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help="Define the execution mode")
+    parser.add_argument("-p", dest="parallel", type=int, default=0, help="Define the level of parallelization")
+    parser.add_argument("-i", dest="interval", type=int, default=0, help="Interval for periodic printing")
     return parser.parse_args()
 
 if __name__ == "__main__":
-    process_data = ProcessData()
     args = parse_arguments()
-    diveconquer(args.input_files, args.mode, args.parallel, args.time, log_file=None, process_data=process_data)
+    process_data = ProcessData()
+    diveconquer(args.input_files, args.mode, args.parallel, args.interval, log_file=None, process_data=process_data)
