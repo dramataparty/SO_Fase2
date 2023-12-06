@@ -1,6 +1,6 @@
 import sys
 import argparse
-from multiprocessing import Process, Lock, Event, Manager, Value, Queue
+from multiprocessing import Process, Lock, Event, Manager, Value, Queue, Array
 import os
 import signal
 import time
@@ -24,14 +24,16 @@ def file_divider(file, n, n_now):
 
 def word_counter(file, n, n_now, shared_data, result_queue):
     words = file_divider(file, n, n_now)
+    shared_data.value += len(words)
     result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def unique_word_counter(file, n, n_now, shared_data, result_queue):
+def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
     unique_words = set(words)
+    shared_data[nbProcess] += len(unique_words)
     result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def occurrence_counter(file, n, n_now, shared_data, result_queue):
+def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
     word_count = {}
     for word in words:
@@ -41,9 +43,10 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue):
     for word, count in word_count.items():
         results.append((word, count))
 
+    shared_data[nbProcess] += len(word_count)
     result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue):
+def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess):
     for idx in range(start_idx, end_idx):
         file = input_files[idx]
         if end_idx - start_idx == 1:
@@ -54,14 +57,20 @@ def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, re
         if mode == "t":
             word_counter(file, n, n_now, shared_data, result_queue)
         elif mode == "u":
-            unique_word_counter(file, n, n_now, shared_data, result_queue)
+            unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess)
         elif mode == "o":
-            occurrence_counter(file, n, n_now, shared_data, result_queue)
+            occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess)
 
-def diveconquer(input_files, mode, parallel, interval, log_file=None):
+def diveconquer(input_files, mode, parallel, interval, log_file):
     manager = Manager()
     shared_data = manager.dict()
     result_queue = manager.Queue()
+    shared_data = None
+    if mode == "t":
+        shared_data = Value("i", 0)
+    else:
+        shared_data = Array("i", [0]*parallel)
+            
 
     num_files = len(input_files)
     num_processes = min(parallel, num_files)
@@ -73,7 +82,7 @@ def diveconquer(input_files, mode, parallel, interval, log_file=None):
         pid = os.fork()
 
         if pid == 0:
-            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue)
+            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue, i)
             os._exit(0)
         else:
             processes.append(pid)
@@ -96,7 +105,8 @@ def diveconquer(input_files, mode, parallel, interval, log_file=None):
 
     if log_file:
         with open(log_file, 'a') as log:
-            log.write(f"\nResults at {datetime.now()}:")
+            date=str(datetime.now())
+            log.write("\n"+ date[0:10] + "_" + date[11:19])
             print_aggregated_results(result_queue)
 
 def signal_handler(signum, frame, processes):
@@ -134,9 +144,10 @@ def parse_arguments():
         help="Define the execution mode. Allowed values: 't' (total), 'u' (unique), 'o' (occurrence)"
     )
     parser.add_argument("-p", dest="parallel", type=int, default=0, help="Define the level of parallelization")
-    parser.add_argument("-i", dest="interval", type=int, default=0, help="Interval for periodic printing")
+    parser.add_argument("-i", dest="interval", type=int, default=3, help="Interval for periodic printing")
+    parser.add_argument("-l", dest="outfile", type=str, default=None, help="Output (file/stdout)")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_arguments()
-    diveconquer(args.input_files, args.mode, args.parallel, args.interval, log_file=None)
+    diveconquer(args.input_files, args.mode, args.parallel, args.interval, args.outfile)

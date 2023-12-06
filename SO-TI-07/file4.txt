@@ -1,0 +1,268 @@
+História
+Sistemas Operativos em linha de comando.
+
+Na segunda geração (aproximadamente 1945-1955), os computadores eram tão grandes que ocupavam salas imensas, ou mesmo andares inteiros. Foram basicamente construídos com válvulas e painéis, e os Sistemas Operativos "não existiam". Os programadores, que também eram os operadores, controlavam o computador por meio de chaves, fios e luzes de aviso.
+
+Nomes como Howard Aiken (Harvard), John von Neumann (Instituto de Estudos Avançados de Princeton), John Adam Presper Eckert Jr e William Mauchley (Universidade da Pennsylvania) e Konrad Zuse (Alemanha) formaram, com suas contribuições, a base humana para o sucesso na construção dos computadores primitivos. Na geração seguinte (aproximadamente 1955-1965), foram criados os sistemas em lote (batch systems), que permitiram melhor uso dos recursos computacionais. A base do sistema operacional era um programa monitor, usado para enfileirar tarefas (jobs). O usuário foi afastado do computador; cada programa era escrito em cartões perfurados, que por sua vez eram carregados, juntamente com o respectivo compilador (normalmente Fortran ou Cobol), por um operador, que por sua vez usava uma linguagem de controle chamada JCL (job control language).
+
+No início da computação os primeiros Sistemas Operativos eram únicos, pois cada mainframe vendido necessitava de um sistema operacional específico. Esse problema era resultado de arquiteturas diferentes e da linguagem que cada máquina utilizava. Após essa fase, iniciou-se a pesquisa de Sistemas Operativos que automatizassem a troca de tarefas (jobs), pois os sistemas eram monousuários e tinham cartões perfurados como entrada (eliminando, assim, o trabalho de pessoas que eram contratadas apenas para trocar os cartões perfurados).
+
+Diz-se que Alan Turing era um mestre nos primeiros Manchester Mark I, e ele já estava derivando a concepção primitiva de um sistema operacional a partir dos princípios da máquina de Turing universal.[3]
+
+Um dos primeiros Sistemas Operativos de propósito geral foi o CTSS, desenvolvido no MIT. Após o CTSS, o MIT, os laboratórios Bell da AT&T e a General Electric desenvolveram o Multics, cujo objetivo era suportar centenas de usuários. Apesar do fracasso comercial, o Multics serviu como base para o estudo e desenvolvimento de Sistemas Operativos. Um dos desenvolvedores do Multics, que trabalhava para a Bell, Ken Thompson, começou a reescrever o Multics num conceito menos ambicioso, criando o Unics (em 1969), que mais tarde passou a chamar-se Unix. Os Sistemas Operativos eram geralmente programandos em assembly, até mesmo o Unix em seu início. Então, Dennis Ritchie (também da Bell) criou a linguagem C a partir da linguagem B, que havia sido criada por Thompson. Finalmente, Thompson e Ritchie reescreveram o Unix em C. O Unix criou um ecossistema de versões, onde destacam-se: System V e derivados (HP-UX, AIX); família BSD (FreeBSD, NetBSD, OpenBSD, etc.), Linux e até o Mac OS X (que deriva do Mach e FreeBSD). O BSD foi lançado em 1977, sendo ele um sistema operacional fortemente baseado no Unix, focado principalmente para a execução em máquinas específicas de alto desempenho, como o famoso computador VAX, o qual foi uma referência de hardware na época.
+
+Durante a década de 70, o Unix foi distribuído gratuitamente (incluindo seu código fonte) para universidades e órgãos governamentais norte-americanos, o que conferiu muita popularidade a este sistema. Sua interface era totalmente em modo texto, sem interface gráfica. Quando começaram a aparecer os computadores pessoais, houve a necessidade de um sistema operacional de utilização mais fácil. Em 1980, William (Bill) Gates e seu colega de faculdade, Paul Allen, fundadores da Microsoft, compram o sistema QDOS ("Quick and Dirty Operating System") de Tim Paterson por $50.000, batizam-no de DOS (Disk Operating System) e vendem licenças à IBM. O DOS vendeu muitas cópias, como o sistema operacional padrão para os computadores pessoais desenvolvidos pela IBM. IBM e Microsoft fariam, ainda, uma parceria para o desenvolvimento de um sistema operacional multitarefa chamado OS/2. Após o fim da breve parceria a IBM seguiu sozinha no desenvolvimento do OS/2.
+
+No começo da década de 1990, um estudante de computação finlandês postou um comentário numa lista de discussão da Usenet dizendo que estava desenvolvendo um núcleo de sistema operacional e perguntou se alguém gostaria de auxiliá-lo na tarefa. Este estudante chamava-se Linus Torvalds e o primeiro passo em direção ao tão conhecido Linux foi dado naquele momento.
+Visão geral
+
+Existem vários Sistemas Operativos; entre eles, os mais utilizados no dia a dia, normalmente utilizados em computadores domésticos, são o Windows, Linux e macOS.
+O OS/360 foi colocado na estrutura principal de todos os computadores IBM no início de 1964, incluindo os computadores que ajudaram a NASA a colocar o homem na lua.
+
+Um computador com o sistema operativo instalado poderá não dar acesso a todo o seu conteúdo dependendo do utilizador. Com um sistema operativo, podemos estabelecer permissões a vários utilizadores que trabalham com este. Existem dois tipos de contas que podem ser criadas num sistema operativo, as contas de Administrador e as contas limitadas.
+
+A conta Administrador é uma conta que oferece todo o acesso à máquina, desde a gestão de pastas, ficheiros e software de trabalho ou entretenimento ao controle de todo o seu Hardware instalado.
+
+A conta Limitada é uma conta que não tem permissões para aceder a algumas pastas ou instalar software que seja instalado na raiz do sistema ou então que tenha ligação com algum Hardware que altere o seu funcionamento normal ou personalizado pelo Administrador. Para que este tipo de conta possa ter acesso a outros conteúdos do disco ou de software, o administrador poderá personalizar a conta oferecendo permissões a algumas funções do sistema como também poderá retirar acessos a certas áreas do sistema.
+
+O sistema operativo funciona com a iniciação de processos que este irá precisar para funcionar corretamente. Esses processos poderão ser ficheiros que necessitam de ser frequentemente atualizados, ou ficheiros que processam dados úteis para o sistema.
+
+Poderemos ter acesso a vários processos do sistema operativo a partir do gestor de tarefas, onde se encontram todos os processos que estão em funcionamento desde o arranque do sistema operativo até a sua utilização atual. Pode-se também visualizar a utilização da memória por cada processo, no caso de o sistema operativo começar a mostrar erros ou falhas de acesso a programas tornando-se lento, pode-se verificar no gestor de tarefas qual dos processos estará bloqueado ou com elevado número de processamento que está a afectar o funcionamento normal da memória.
+Sistemas Operativos modernos
+
+Um sistema computacional moderno consiste em um ou mais processadores, memória principal, discos, impressoras, teclado, mouse, monitor, interfaces de rede e outros dispositivos de entrada e saída. Enfim, é um sistema complexo. Se cada programador de aplicações tivesse de entender como tudo isso funciona em detalhes, nenhum código chegaria a ser escrito. Além disso, gerenciar todos esses componentes e usá-los de maneira otimizada é um trabalho extremamente difícil. Por isso, os computadores têm um dispositivo de software denominado sistema operacional, cujo trabalho é fornecer aos programas do usuário um modelo de computador melhor, mais simples e mais limpo e lidar com o gerenciamento de todos os recursos mencionados.[4]
+
+Um dos conceitos mais fundamentais dos Sistemas Operativos Modernos é a distinção entre o programa e a atividade de executá-lo. O programa é apenas um conjunto estático de diretrizes e sua execução é uma atividade dinâmica[5].
+
+Outra das diferenças que podemos observar entre um sistema operacional e aplicações convencionais é a forma com que suas rotinas são processadas em função do tempo. Um sistema operacional não é executado de forma estruturada. Suas rotinas são executadas concorrentemente em função de eventos assíncronos. Em outras palavras, eventos que podem ocorrer a qualquer momento.[6]
+Estrutura em camada
+Ver artigo principal: Sistema Operacional em Camadas
+
+A Estruturação em camadas é um modelo de Sistema Operacional que divide o SO (Sistema Operacional) em várias camadas sobrepostas. Cada camada proporciona um conjunto de funções que pode ser usado por outras camadas.
+
+Uma das maiores vantagens desse modelo de camadas é isolar o sistema operacional, facilitando sua alteração e depuração, além de criar uma hierarquia de níveis de modos, protegendo as camadas mais internas.
+
+O empilhamento de várias camadas de software faz com que cada pedido de uma aplicação demore mais tempo para chegar até o dispositivo periférico ou recurso a ser acessado, prejudicando o desempenho do sistema.
+Funcionamento
+
+Um sistema operacional possui as seguintes funções:
+
+    gerenciamento de processos;
+    gerenciamento de memória;
+    gerenciamento de recursos;
+    entrada e saída de dados;
+    sistema de arquivos.
+
+Gerenciamento de processos
+
+O sistema operacional multitarefa é preparado para dar ao usuário a ilusão que o número de processos em execução simultânea no computador é maior que o número de processadores instalados. Cada processo recebe uma fatia do tempo e a alternância entre vários processos é tão rápida que o usuário pensa que sua execução é simultânea.
+
+São utilizados algoritmos de escalonamento para determinar qual processo será executado em determinado momento e por quanto tempo.
+
+Os processos podem comunicar-se, isto é conhecido como IPC (Inter-Process Communication). Os mecanismos geralmente utilizados são:
+
+    sinais;
+    pipes;
+    named pipes;
+    memória compartilhada;
+    soquetes (sockets);
+    trocas de mensagens.
+
+O sistema operacional, normalmente, deve possibilitar o multiprocessamento (SMP ou NUMA). Neste caso, processos diferentes e threads podem ser executados em diferentes processadores. Para essa tarefa, ele deve ser reentrante e interrompível, o que significa que pode ser interrompido no meio da execução de uma tarefa.
+Gerenciamento de memória
+Ver artigo principal: Gerenciamento de memória
+
+O sistema operacional tem acesso completo à memória do sistema e deve permitir que os processos dos usuários tenham acesso seguro à memória quando o requisitam.
+O primeiro servidor para WWW rodou em um NeXTSTEP baseado no BSD.
+
+Vários Sistemas Operativos usam memória virtual, que possui 3 funções básicas:
+
+    Assegurar que cada processo tenha seu próprio espaço de endereçamento, começando em zero, para evitar ou resolver o problema de relocação (Tanenbaum, 1999);
+    Prover proteção da memória para impedir que um processo utilize um endereço de memória que não lhe pertença;
+    Possibilitar que uma aplicação utilize mais memória do que a fisicamente existente.
+
+Swapping
+
+Dentro de gerenciamento de memória, pode não ser possível manter todos os processos em memória, muitas vezes por não existir memória suficiente para alocar aquele processo. Para solucionar esse problema existe um mecanismo chamado swapping, onde a gerência de memória reserva uma área do disco para o seu uso em determinadas situações, e um processo é completamente copiado da memória para o disco; este processo é retirado da fila do processador e mais tarde será novamente copiado para a memória; Então, o processo ficará ativo na fila novamente. O resultado desse revezamento no disco é que o sistema operacional consegue executar mais processos do que caberia em um mesmo instante na memória. Swapping impõe aos programas um grande custo em termos de tempo de execução, pois é necessário copiar todo o processo para o disco e mais tarde copiar novamente todo o processo para a memória. Em sistemas onde o usuário interage com o programa durante sua execução, o mecanismo de swapping é utilizado em último caso, quando não se é possível manter todos os processos na memória, visto que a queda no desempenho do sistema é imediatamente sentida pelo usuário.[7]
+Gerenciamento de recursos
+
+Uma das tarefas com extrema importância atribuída ao sistema operacional é o gerenciamento de recursos, que tem a função de definir políticas para gerenciar o uso dos recursos de hardware pelos aplicativos, resolvendo disputas e conflitos. Vários programas de entrada de dados competem pela vez na CPU (Unidade Central de Processamento) e demandam memória, espaço em disco e largura. O sistema operacional tem a função de cuidar de cada aplicativo e para que os mesmos tenham recursos necessários para o melhor funcionamento e gerencia a capacidade limitada do sistema para que possa atender todas as necessidades de aplicativos e usuários.
+Entrada e saída de dados
+
+Sistemas Operativos controlam e gerenciam a entrada e saída (E/S) de dispositivos por três razões. Primeiro, porque a maioria do hardware do dispositivo utiliza uma interface de baixo nível, a interface do software é complexa. Em segundo lugar, porque um dispositivo é um recurso compartilhado, um sistema operacional fornece acesso de acordo com as políticas que tornam a partilha justa e segura. Em terceiro lugar, um sistema operacional define uma interface de alto nível que esconde detalhes e permite que um programador possa usar um conjunto coerente e uniforme das operações ao interagir com os dispositivos.[8]
+
+O subsistema de E/S pode ser divididos em três peças conceituais:
+
+    Uma interface abstrata que consiste funções de E/S de alto nível que os processos possam usar para executar I / O;
+    Um conjunto de dispositivos físicos;
+    Software de driver de dispositivo que conecta os dois.
+
+Sistema de arquivos
+
+A memória principal do computador é volátil, e seu tamanho é limitado pelo custo do hardware. Assim, os usuários necessitam de algum método para armazenar e recuperar informações de modo permanente.
+
+Um arquivo é um conjunto de bytes, normalmente armazenado em um dispositivo periférico não volátil (p.ex., disco), que pode ser lido e gravado por um ou mais processos.
+Tipos de sistemas
+Sistema Mono-programado
+
+Também chamados como sistema mono-tarefa, o sistema operacional mono-programado possui apenas um processador, realiza alocação de memória para somente um processo e um usuário por vez. Apresenta também uma CPU ociosa durante E/S e sua implementação é feita de forma simples.
+Sistema em Lote
+
+O sistema em lote é também um sistema mono-processado e utiliza a linguagem de Controle de Tarefas (JLC). Caracteriza-se por ter programas armazenados em disco ou fita, que uma vez iniciados, exigem pouca ou nenhuma interação do usuário, processando de forma sequencial e contínua até o fim do job, quando então é devolvido o resultado final do processamento.
+
+Exemplos de JLC:
+
+// $JOB
+// $FORTRAN
+
+    Programa escrito em FORTRAN
+
+// $LOAD
+// $RUN
+
+    Dados de entrada do programa
+
+// $END
+
+Sistema multi-processadores
+
+Os sistemas multi-processadores – dois ou mais processadores trabalhando juntos – podem ser divididos em duas partes:
+
+    Sistemas fortemente acoplados;
+    Sistemas fracamente acoplados.
+
+Dentro de sistemas fortemente acoplados – memória única compartilhada por dois ou mais processadores, tendo um mesmo sistema operacional gerenciando todos os processadores –, encontramos mais duas divisões:
+
+    Sistemas simétricos – onde os processadores têm a mesma função;
+    Sistemas assimétricos – onde um processador (mestre) pode executar serviços do sistema operacional.
+
+Dentro de sistemas fracamente acoplados – mais de dois Sistemas Operativos que são ligados por canal de comunicação, tendo hardware e Sistemas Operativos independentes – temos:
+
+    Sistemas Operativos de rede – cada sistema, também chamado host ou nó, possui seus próprios recursos de hardware, como processadores, memória e dispositivos de entrada e saída. Os nós são totalmente independentes dos terminais, sendo interconectados por uma rede de comunicação de dados, formando uma rede de computadores. Os Sistemas Operativos de rede são utilizados tanto em redes locais (Local Area Network - LAN), como em redes distribuídas (Wide Area Network - WAN). A ligação entre os diversos nós é feita por uma interface de rede que permite o acesso aos demais componentes da rede. Não existe um limite máximo para o número de nós que podem fazer parte de uma rede de computadores. Cada nó é totalmente independente dos demais, possuindo seu próprio sistema operacional e espaço de endereçamento. Os Sistemas Operativos podem ser heterogêneos. Na Internet, cada host pode estar processando um sistema operacional diferente, mas todos estão se comunicando através do mesmo protocolo de rede, no caso, os protocolos da família TCP/IP (Transmission Control Protocol/Internet Protocol).[6]
+    Sistemas Operativos distribuídos – computadores independentes que parecem um único computador aos olhos do usuário; Trata-se de um conjunto de processos que são executados de forma concorrente, cada um dos quais acessando um subconjunto de recursos do sistema. E essa comunicação é feita em forma de envio de mensagens.
+
+Sistema Multi-programado para Tempo Real
+
+Os sistemas multi-programado para tempo real além de serem sistemas multi-programados, possuem um tempo de resposta rígido e por isso são muito utilizados no controle de processos. Têm menos time-slice e mais prioridade, ademais, seus processos são ativados por sensores. A aplicação deste tipo de sistema está em máquinas de usinas, refinarias, tráfego aéreo, etc.
+Interface de uso
+
+Os Sistemas Operativos fornecem abstração de hardware para que seus recursos possam ser usados de maneira correta e padronizada, mas para ser possível operar um computador, é necessário fornecer também uma interface para que o usuário possa desfrutar dos recursos do sistema. Atualmente as principais interfaces de uso são as seguintes:
+Interface de terminal
+
+A interface de terminal, também chamada de interface de linha de comando ou "CLI" (Command Line Interface) funciona exclusivamente com o teclado. Os comandos são digitados a partir de um prompt e são interpretados por um interpretador de comandos, conhecidos também por shells, bastante comuns em sistemas padrão POSIX. Um exemplo de interpretador de comandos seria o Bash.
+
+Usada geralmente por usuários avançados e em atividades específicas, como gerenciamento remoto, utiliza poucos recursos de hardware em comparação a interface gráfica.
+Interface textual
+Aplicativo com interface textual, rodando no sistema operacional FreeDOS
+
+Assim como a interface de terminal, a interface textual também é baseada em texto, porém também tem à disposição um ambiente de trabalho composto por menus, janelas e botões. Esse tipo de interface tinha um uso difundido em aplicações baseadas no MS-DOS, que, inclusive, nas versões mais recentes contava com um gerenciador de programas e arquivos baseados nesse tipo de interface (o DOS Shell). Atualmente essa interface é muito rara, praticamente restrita a sistemas implementados na década de 1980 e início da década de 1990. Esse ambiente ainda prescinde do uso mouse, embora seja possível usá-lo através do uso da biblioteca ncurses no desenvolvimento dos softwares.
+Interface gráfica
+
+Nesse tipo de interface, também chamada GUI (Graphic User Interface) além de menus, janelas e botões também existem figuras, tanto vetoriais quanto fotografias. O usuário interage com esse tipo de interface usando o mouse, podendo também usar o teclado e teclas de atalho, ou então usando toques e gestos em touchscreens. A interface gráfica permite atuar com algumas aplicações que seriam impossíveis através da linha de comando puramente, como edição de imagem e vídeo. Acrescentar facilidade de uso e agilidade é o objetivo da interface gráfica, tendo a desvantagem de consumir muito mais memória que interfaces de linha de comando. Ao contrário das interfaces textuais e de terminal, as interfaces gráficas dependem de um servidor gráfico para funcionar e se comunicar com o sistema, e no caso dos sistemas para desktops e laptops, inclui um gerenciador de janelas em muitos casos, para que seja possível usar mais de um aplicativo na mesma tela. Em sistemas padrão POSIX é comum existir mais de um ambiente gráfico para o mesmo sistema, podendo ser escolhido a critério do usuário.
+Interface de voz
+
+Interfaces de voz, ou VUI (Voice User Interface), são aquelas em que o usuário interage com o sistema por meio de comandos sonoros. Sendo de desenvolvimento relativamente recente, tem sua aplicação em dispositivos adaptados para cegos e recentemente têm aparecido também para uso geral em smartphones, tablets e desktops.
+Classificações
+Um exemplo da linha de comando
+Em relação ao seu projeto (arquitetura)
+
+    Núcleo monolítico ou monobloco: o núcleo consiste em um único processo executando numa memória protegida (espaço de núcleo) executando as principais funções. Ex.: MAC OS X, OS/2, Windows, Linux, FreeBSD.
+    Micronúcleo ou modelo cliente-servidor: o núcleo consiste de funções mínimas (comunicação e gerenciamento de processos), e outras funções, como sistemas de arquivos e gerenciamento de memória, são executadas no espaço do usuário como serviços; as aplicações (programas) são os clientes. Ex.: GNU Hurd, Mach.
+    Sistema em camadas: funções do núcleo irão executar em camadas distintas, de acordo com seu nível de privilégio. Ex.: Multics.
+    Monitor de máquinas virtuais: fornece uma abstração do hardware para vários Sistemas Operativos. Ex.: VM/370, VMware, Xen.
+
+Quanto ao gerenciamento de processos
+
+    Monotarefa: pode-se executar apenas um processo de cada vez Ex.: MS-DOS.
+    Multitarefa: além do próprio SO, vários processos de utilizador (tarefas) estão carregados em memória, sendo que um pode estar ocupando o processador e outros ficam enfileirados, aguardando a sua vez. O compartilhamento de tempo no processador é feito de modo que o usuário tenha a impressão que vários processos estão sendo executados simultaneamente. Cada processo recebe um tempo para ser executado. Ao final desse tempo, outro processo é executado. Essa alternância de processos chama-se concorrência.
+    Multitarefa cooperativa: Executa dois ou mais programas em simultâneo mas o programa que está em primeiro plano tem controlo sobre o processador. Neste caso se este programa falhar bloqueia o computador e tem que ser reiniciado. Exemplo de SO: Windows 3.x e versões anteriores ao Mac OS 8.
+    Multitarefa preemptiva: É o processador que controla a execução dos programas, desta forma permite ao sistema operativo recuperar o controlo caso um programa bloqueie. O utilizador perde os trabalhos do programa que falhou mas os restantes programas continuam a trabalhar. Exemplo de SO: Unix; Linux; Windows 95 e superiores; MAC OS 8 e superiores; etc.
+    Elemento de lista com marcas: Ex: OS/2, Windows, Linux, FreeBSD e o Mac OS X. Cabe destacar que processos só podem estar executando simultaneamente caso o sistema seja multiprocessado, já que, em que cada instante de tempo, apenas um processo está em execução em um processador ou núcleo de processamento (core).
+    Multiprocessamento: o SO distribui as tarefas entre dois ou mais processadores. Se os processadores estivem na mesma máquina física, o sistema é chamado de Sistema Multiprocessado Fortemente Acoplado. Caso esteja em máquinas diferentes, trata-se de um Sistema Multiprocessado Fracamente Acoplado.
+
+Quanto à quantidade de usuários concorrentes
+
+    Monousuário: apenas um usuário por vez (apesar de poder suportar recursos como troca de usuário). Ex.: Windows. Esse também pode ser acessado por terminais e conexão remota.
+    Multiusuário: vários usuários usam o computador ao mesmo tempo, seja por diversos terminais, seja por conexão remota como o SSH. Ex.: Linux, Unix.
+
+Exemplos de Sistemas Operativos
+Para desktop/servidores
+
+    BeOS †
+    CentOS
+    CP/M †
+    DaVinci OS
+    Debian
+    Arch Linux
+    Manjaro Linux
+    Sabayon Linux
+    SolusOS
+    DragonflyBSD
+    eComStation
+    Fedora
+    FreeBSD
+    FreeDOS
+    Gentoo
+    Haiku
+    Inferno
+    Linux Mint
+    macOS
+    Mac OS Classic †
+    Mageia
+    MenuetOS
+    MINIX
+    MS-DOS †
+    NetBSD
+    NeXTStep †
+    OpenBSD
+    OS/2 †
+    OpenSuSE
+    PCLinuxOS
+    Plan 9
+    ReactOS
+    Slackware
+    Solaris
+    Unix System V
+    Ubuntu
+    Microsoft Windows
+    Elementary OS
+
+Para dispositivos móveis (tablets e smartphones)
+
+    Android
+    Bada
+    Blackberry OS
+    Firefox OS †
+    iOS
+    Maemo
+    MeeGo
+    Tizen
+    Ubuntu Touch
+    WebOS
+    Windows Mobile †
+    Windows Phone†
+    Symbian OS †
+    RedHat
+
+† - descontinuado
+Referências
+
+Tanenbaum, Andrew S. (2006). Operating systems: design and implementation. USA: Prentice Hall. 6 páginas
+Comer, Douglas (2012). Operating system design: the XINU approach, Linksys version. New York: CRC Press. 2 páginas
+Hansen, Per Brinch, ed. (2001). Classic Operating Systems. [S.l.]: Springer. pp. 4–7. ISBN 0-387-95113-X
+Tanenbaum, Andrew S. (2009). Sistemas Operativos modernos. São Paulo: Pearson Education do Brasil Ltda
+J. GLENN BROOKSHEAR,CIENCIA DA COMPUTAÇAO: UMA VISAO ABRANGENTE, Bookman, 2005
+F. B. Machado; L. P. Maia, Arquitetura de Sistemas Operativos, LTC, 2007
+(Sistemas Operativos - Rômulo Silva de Oliveria, Alexandre Carissimi e Simão Toscani - Série Livros Didáticos - No 11 - Editora Sagra Luzzatto - UFRGS)
+
+    Comer, Douglas (2012). Operating system design: the Xinu approach. New York: CRC Press. 239 páginas
+
+Referências bibliográficas
+
+    BACH, Maurice J. The design of the Unix operating system. Upper Saddle River: Prentice Hall. 1990.
+    BOVET Daniel P.; CESATI, Marco. Understanding de Linux kernel. 3.ed. Sebastopol: O'Reilly. 2005.
+    MCKUSICK, Marshall K.; NEVILLE-NEIL, George V. The design and implementation of the FreeBSD operating system. Upper Saddle River: Addison-Wesley. 2004.
+    RUSSINOVITCH, Mark E.; SOLOMON, David A. Microsoft Windows internals. 4.ed. Redmond: Microsoft Press. 2005.
+    SILBERSCHATZ, Avi; GALVIN, Peter B.; GAGNE, Greg. Operating system concepts. 7.ed. Hoboken: Wiley. 2005.
+    STALLINGS, William. Operating systems: internals and design principles. 5.ed. Upper Saddle River: Pearson Prentice Hall. 2004.
+    TANENBAUM, Andrew. Sistemas Operativos modernos. Rio de Janeiro: LTC. 1999.
