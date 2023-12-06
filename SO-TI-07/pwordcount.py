@@ -1,18 +1,10 @@
 import sys
 import argparse
-from multiprocessing import Process, Lock, Event, Array
+from multiprocessing import Process, Lock, Event, Manager, Value, Queue
 import os
 import signal
 import time
 from datetime import datetime
-
-class ProcessData:
-    def __init__(self):
-        self.lock = Lock()
-        self.exit_event = Event()
-        self.aggregated_results = Array('i', [0, 0, 0, 0, 0])
-        self.elapsed_time = 0
-        self.start_time = 0
 
 def special_cleaner(unclean_words):
     special_chars = '!@#$%^&*()_+[]{}|;:,.<>?/\\"~†–'
@@ -30,151 +22,121 @@ def file_divider(file, n, n_now):
     end_idx = int(n_now * len(words) / n)
     return words[start_idx:end_idx]
 
-def word_counter(file, n, n_now):
+def word_counter(file, n, n_now, shared_data, result_queue):
     words = file_divider(file, n, n_now)
-    print(f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(file)/n)} "
-          f"e {int(n_now*count_lines(file)/n)} de {file}")
+    result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def unique_word_counter(file, n, n_now):
+def unique_word_counter(file, n, n_now, shared_data, result_queue):
     words = file_divider(file, n, n_now)
     unique_words = set(words)
-    print(f"{len(unique_words)} palavras únicas entre as linhas {int((n_now-1)*count_lines(file)/n)} "
-          f"e {int(n_now*count_lines(file)/n)} de {file}")
+    result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def occurrence_counter(file, n, n_now):
+def occurrence_counter(file, n, n_now, shared_data, result_queue):
     words = file_divider(file, n, n_now)
     word_count = {}
     for word in words:
         word_count[word] = word_count.get(word, 0) + 1
 
-    print(f"Ocorrências de Palavras Únicas/Diferentes entre as linhas "
-          f"{int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}:")
-
+    results = []
     for word, count in word_count.items():
-        print(f"{word}: {count}")
+        results.append((word, count))
 
-def worker(start_idx, end_idx, pid, n, n_now, input_files, mode):
+    result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+
+def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue):
     for idx in range(start_idx, end_idx):
-        if exit_event.is_set():
-            break
-
         file = input_files[idx]
         if end_idx - start_idx == 1:
             print(f"Process {pid} is working on the file {file}")
         else:
             print(f"Process {pid} is working on files {input_files[start_idx]} to {input_files[end_idx - 1]}")
 
-        result = process_file(file, mode, n, n_now)
+        if mode == "t":
+            word_counter(file, n, n_now, shared_data, result_queue)
+        elif mode == "u":
+            unique_word_counter(file, n, n_now, shared_data, result_queue)
+        elif mode == "o":
+            occurrence_counter(file, n, n_now, shared_data, result_queue)
 
-        with lock:
-            aggregated_results[0] += result[0]
-            aggregated_results[1] += result[1]
-            aggregated_results[2] += result[2]
-            aggregated_results[3] += result[3]
-            aggregated_results[4] += result[4]
-
-        print_partial_results()
-
-def process_file(file, mode, n, n_now):
-    if mode == "t":
-        return word_counter(file, n, n_now)
-    elif mode == "u":
-        return unique_word_counter(file, n, n_now)
-    elif mode == "o":
-        return occurrence_counter(file, n, n_now)
-
-def diveconquer(input_files, mode, parallel, interval, log_file):
-    global lock, exit_event, aggregated_results, elapsed_time, start_time
+def diveconquer(input_files, mode, parallel, interval, log_file=None):
+    manager = Manager()
+    shared_data = manager.dict()
+    result_queue = manager.Queue()
 
     num_files = len(input_files)
     num_processes = min(parallel, num_files)
 
-    if interval > 0:
-        start_time = time.time()
-        while True:
-            time.sleep(interval)
-            elapsed_time = time.time() - start_time
-            print_partial_results()
-            if elapsed_time >= interval:
-                break
-
     processes = []
     for i in range(num_processes):
-        if exit_event.is_set():
-            break
-
         start_idx = i * (num_files // num_processes)
         end_idx = (i + 1) * (num_files // num_processes) if i < num_processes - 1 else num_files
         pid = os.fork()
 
         if pid == 0:
-            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode)
+            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue)
             os._exit(0)
         else:
             processes.append(pid)
 
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes))
 
     for pid in processes:
         os.waitpid(pid, 0)
 
-    print_aggregated_results()
+    print_aggregated_results(result_queue)
 
     if interval > 0:
         start_time = time.time()
         while True:
             time.sleep(interval)
             elapsed_time = time.time() - start_time
-            print(f"\nResults after {elapsed_time:.2f} seconds:")
-            diveconquer(input_files, mode, parallel, 0, "")
+            print_partial_results(result_queue)
             if elapsed_time >= interval:
                 break
 
     if log_file:
         with open(log_file, 'a') as log:
             log.write(f"\nResults at {datetime.now()}:")
-            diveconquer(input_files, mode, parallel, 0, "")
+            print_aggregated_results(result_queue)
 
-def signal_handler(signum, frame):
+def signal_handler(signum, frame, processes):
     print("\nReceived SIGINT. Waiting for child processes to finish...")
-    exit_event.set()
+    for pid in processes:
+        os.kill(pid, signal.SIGTERM)
     sys.exit(0)
 
-def print_partial_results():
-    with lock:
-        current_time = time.time()
-        elapsed_time = current_time - start_time
+def print_partial_results(result_queue):
+    while not result_queue.empty():
+        result_type, result_data, message = result_queue.get()
+        print(f"{message}:", result_data)
 
-        results = {
-            "Timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time)),
-            "Elapsed Time": round(elapsed_time, 2),
-            "Word Count": aggregated_results[0],
-            "Processed Files": aggregated_results[3],
-            "Remaining Files": aggregated_results[4]
-        }
+def print_aggregated_results(result_queue):
+    results = {}
+    while not result_queue.empty():
+        result_type, result_data, message = result_queue.get()
+        results[result_type] = results.get(result_type, []) + [(result_data, message)]
 
-        print("\nPartial Results:")
-        for key, value in results.items():
-            print(f"{key}: {value}")
-        print("\n")
-
-def print_aggregated_results():
-    print(f"Aggregated Results:")
-    print(f"Total Words: {aggregated_results[0]}")
-    print(f"Unique Words: {aggregated_results[1]}")
-    print(f"Occurrences: {aggregated_results[2]}")
-    print(f"Processed Files: {aggregated_results[3]}")
-    print(f"Remaining Files: {aggregated_results[4]}")
-
+    print("\nAggregated Results:")
+    for result_type, result_list in results.items():
+        print(f"{result_type.capitalize()} Results:")
+        for result_data, message in result_list:
+            print(f"{message}: {result_data}")
+        print()
+    
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Tool for Processing Arguments")
     parser.add_argument("input_files", nargs='+', help="Input files")
-    parser.add_argument("-m", dest="mode", choices=["t", "u", "o"], default="t", help="Define the execution mode")
+    parser.add_argument(
+        "-m",
+        dest="mode",
+        choices=["t", "u", "o"],
+        default="t",
+        help="Define the execution mode. Allowed values: 't' (total), 'u' (unique), 'o' (occurrence)"
+    )
     parser.add_argument("-p", dest="parallel", type=int, default=0, help="Define the level of parallelization")
     parser.add_argument("-i", dest="interval", type=int, default=0, help="Interval for periodic printing")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_arguments()
-    process_data = ProcessData()
-    diveconquer(args.input_files, args.mode, args.parallel, args.interval, log_file=None, process_data=process_data)
+    diveconquer(args.input_files, args.mode, args.parallel, args.interval, log_file=None)
