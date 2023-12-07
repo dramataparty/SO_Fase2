@@ -6,6 +6,8 @@ import signal
 import time
 from datetime import datetime
 
+finished = 0
+
 def special_cleaner(unclean_words):
     special_chars = '!@#$%^&*()_+[]{}|;:,.<>?/\\"~†–'
     clean_words = [word.translate(str.maketrans('', '', special_chars)).lower() for word in unclean_words if word.strip()]
@@ -22,10 +24,13 @@ def file_divider(file, n, n_now):
     end_idx = int(n_now * len(words) / n)
     return words[start_idx:end_idx]
 
-def word_counter(file, n, n_now, shared_data, result_queue):
+def word_counter(file, n, n_now, shared_data, result_queue, lock):
     words = file_divider(file, n, n_now)
-    shared_data.value += len(words)
+    with lock:
+        for word in words:
+            shared_data.value += 1
     result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    os.kill(os.getppid(), signal.SIGUSR1)
 
 def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
@@ -46,7 +51,7 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     shared_data[nbProcess] += len(word_count)
     result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
 
-def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess):
+def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess, lock):
     for idx in range(start_idx, end_idx):
         file = input_files[idx]
         if end_idx - start_idx == 1:
@@ -55,19 +60,21 @@ def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, re
             print(f"Process {pid} is working on files {input_files[start_idx]} to {input_files[end_idx - 1]}")
 
         if mode == "t":
-            word_counter(file, n, n_now, shared_data, result_queue)
+            word_counter(file, n, n_now, shared_data, result_queue, lock)
         elif mode == "u":
             unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess)
         elif mode == "o":
             occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess)
 
 def diveconquer(input_files, mode, parallel, interval, log_file):
+    start_time = time.time()
     manager = Manager()
     shared_data = manager.dict()
     result_queue = manager.Queue()
     shared_data = None
+    lock = Lock()
     if mode == "t":
-        shared_data = Value("i", 0)
+        shared_data = Value("i", 0) 
     else:
         shared_data = Array("i", [0]*parallel)
             
@@ -82,32 +89,34 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
         pid = os.fork()
 
         if pid == 0:
-            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue, i)
+            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue, i, lock)
             os._exit(0)
         else:
             processes.append(pid)
 
     signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes))
+    signal.signal(signal.SIGUSR1, signal_counter)
 
-    for pid in processes:
-        os.waitpid(pid, 0)
-
-    print_aggregated_results(result_queue)
+    # for pid in processes:
+    #     os.waitpid(pid, 0)
 
     if interval > 0:
-        start_time = time.time()
+        last_time = time.time()
+        elapsed_time = 0
+        k = 0
         while True:
-            time.sleep(interval)
-            elapsed_time = time.time() - start_time
-            print_partial_results(result_queue)
-            if elapsed_time >= interval:
-                break
-
-    if log_file:
-        with open(log_file, 'a') as log:
-            date=str(datetime.now())
-            log.write("\n"+ date[0:10] + "_" + date[11:19])
-            print_aggregated_results(result_queue)
+            current_time = time.time() - last_time
+            if current_time >= interval:
+                if parallel == finished:
+                    k += 1
+                    if k == 2:
+                        break
+                last_time = time.time()
+                elapsed_time = current_time - start_time + last_time
+                print_partial_results(mode, parallel, shared_data, elapsed_time, log_file)
+            
+            
+    print_aggregated_results(result_queue)
 
 def signal_handler(signum, frame, processes):
     print("\nReceived SIGINT. Waiting for child processes to finish...")
@@ -115,10 +124,29 @@ def signal_handler(signum, frame, processes):
         os.kill(pid, signal.SIGTERM)
     sys.exit(0)
 
-def print_partial_results(result_queue):
-    while not result_queue.empty():
-        result_type, result_data, message = result_queue.get()
-        print(f"{message}:", result_data)
+def signal_counter(signum, frame):
+    global finished
+    finished += 1
+
+def print_partial_results(mode, parallel, shared_data, elapsed_time, output=None):
+    total_words = 0
+    if mode == "t":
+        total_words += shared_data.value
+    else:
+        for counter in shared_data:
+            total_words += counter
+    if output:
+        with open(output, 'a') as log:
+            date=str(datetime.now())
+            log.write(date[0:10] + "_" + date[11:19] + " ")
+            log.write(str(int(elapsed_time*1e6)) + " ")
+            log.write(str(total_words) + " ")
+            log.write(str(finished) + " ")
+            log.write(str(parallel-finished) + "\n")
+            
+    else:
+        date=str(datetime.now())
+        print(date[0:10] + "_" + date[11:19], str(int(elapsed_time*1e6)), str(total_words), str(finished), str(parallel-finished))
 
 def print_aggregated_results(result_queue):
     results = {}
@@ -130,7 +158,7 @@ def print_aggregated_results(result_queue):
     for result_type, result_list in results.items():
         print(f"{result_type.capitalize()} Results:")
         for result_data, message in result_list:
-            print(f"{message}: {result_data}")
+            print(f"{message}")
         print()
     
 def parse_arguments():
