@@ -1,10 +1,11 @@
 import sys
-import argparse
-from multiprocessing import Process, Lock, Event, Manager, Value, Queue, Array
 import os
 import signal
 import time
 from datetime import datetime
+from multiprocessing import Process, Lock, Event, Manager, Value, Queue, Array
+import argparse
+
 
 finished = 0
 
