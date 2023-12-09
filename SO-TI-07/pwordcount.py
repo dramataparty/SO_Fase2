@@ -21,8 +21,8 @@ def count_lines(file):
 def file_divider(file, n, n_now):
     with open(file, 'r') as file:
         words = special_cleaner(file.read().split())
-    start_idx = int((n_now - 1) * len(words) / n)
-    end_idx = int(n_now * len(words) / n)
+    start_idx = int(n_now * len(words) / n)
+    end_idx = int((n_now + 1) * len(words) / n)
     return words[start_idx:end_idx]
 
 def word_counter(file, n, n_now, shared_data, result_queue, lock):
@@ -30,14 +30,14 @@ def word_counter(file, n, n_now, shared_data, result_queue, lock):
     with lock:
         for word in words:
             shared_data.value += 1
-    result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
     unique_words = set(words)
     shared_data[nbProcess] += len(unique_words)
-    result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
@@ -51,7 +51,7 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
         results.append((word, count))
 
     shared_data[nbProcess] += len(word_count)
-    result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess, lock):
@@ -80,21 +80,32 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
             
 
     num_files = len(input_files)
-    num_processes = min(parallel, num_files)
-    num_text = max(parallel, num_files)
-    
+    num_processes = parallel
+    text_blocks = 0
 
     processes = []
-    for i in range(num_processes):
-        start_idx = i * (num_files // num_processes)
-        end_idx = (i + 1) * (num_files // num_processes) if i < num_processes - 1 else num_files
-        pid = os.fork()
+    if num_processes > 1 and num_files == 1:
+        text_blocks = num_processes
+        for i in range(num_processes) :
+            pid = os.fork()
+            if pid == 0:
+                worker(0, 1, os.getpid(), num_processes, i, input_files, mode, shared_data, result_queue, i, lock)
+                os._exit(0)
+            else:
+                processes.append(pid)
+    else:
+        num_processes = min(parallel, num_files)
+        text_blocks = num_files
+        for i in range(num_processes):
+            start_idx = i * (num_files // num_processes)
+            end_idx = (i + 1) * (num_files // num_processes) if i < num_processes - 1 else num_files
+            pid = os.fork()
 
-        if pid == 0:
-            worker(start_idx, end_idx, os.getpid(), 1, 1, input_files, mode, shared_data, result_queue, i, lock)
-            os._exit(0)
-        else:
-            processes.append(pid)
+            if pid == 0:
+                worker(start_idx, end_idx, os.getpid(), 1, 0, input_files, mode, shared_data, result_queue, i, lock)
+                os._exit(0)
+            else:
+                processes.append(pid)
 
     signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes))
     signal.signal(signal.SIGUSR1, signal_counter)
@@ -106,13 +117,13 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
         while True:
             current_time = time.time() - last_time
             if current_time >= interval:
-                if num_text == finished:
+                if text_blocks == finished:
                     k += 1
                     if k == 2:
                         break
                 last_time = time.time()
                 elapsed_time = current_time - start_time + last_time
-                print_partial_results(mode, num_text, shared_data, elapsed_time, log_file)
+                print_partial_results(mode, text_blocks, shared_data, elapsed_time, log_file)
                       
     print_aggregated_results(result_queue)
 
