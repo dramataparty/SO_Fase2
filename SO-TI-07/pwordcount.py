@@ -25,19 +25,18 @@ def file_divider(file, n, n_now):
     end_idx = int((n_now + 1) * len(words) / n)
     return words[start_idx:end_idx]
 
-def word_counter(file, n, n_now, shared_data, result_queue, lock):
+def word_counter(file, n, n_now, shared_data, lock):
     words = file_divider(file, n, n_now)
     with lock:
         for word in words:
             shared_data.value += 1
-    result_queue.put(('word_counter', len(words), f"Total de {len(words)} palavras entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
     unique_words = set(words)
     shared_data[nbProcess] += len(unique_words)
-    result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
+    result_queue.put(unique_words)
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
@@ -45,13 +44,9 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     word_count = {}
     for word in words:
         word_count[word] = word_count.get(word, 0) + 1
-
-    results = []
-    for word, count in word_count.items():
-        results.append((word, count))
-
+    
     shared_data[nbProcess] += len(word_count)
-    result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int(n_now*count_lines(file)/n)} e {int((n_now + 1)*count_lines(file)/n)} de {file}"))
+    result_queue.put(word_count)
     os.kill(os.getppid(), signal.SIGUSR1)
 
 def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess, lock):
@@ -60,7 +55,7 @@ def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, re
         print(f"Process {pid} is working on the file {file}")
 
         if mode == "t":
-            word_counter(file, n, n_now, shared_data, result_queue, lock)
+            word_counter(file, n, n_now, shared_data, lock)
         elif mode == "u":
             unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess)
         elif mode == "o":
@@ -78,7 +73,6 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
     else:
         shared_data = Array("i", [0]*parallel)
             
-
     num_files = len(input_files)
     num_processes = parallel
     text_blocks = 0
@@ -125,7 +119,7 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
                 elapsed_time = current_time - start_time + last_time
                 print_partial_results(mode, text_blocks, shared_data, elapsed_time, log_file)
                       
-    print_aggregated_results(result_queue)
+    print_aggregated_results(shared_data, result_queue, mode)
 
 def signal_handler(signum, frame, processes):
     print("\nReceived SIGINT. Waiting for child processes to finish...")
@@ -144,6 +138,7 @@ def print_partial_results(mode, processes, shared_data, elapsed_time, output=Non
     else:
         for counter in shared_data:
             total_words += counter
+
     if output:
         with open(output, 'a') as log:
             date=str(datetime.now())
@@ -157,18 +152,28 @@ def print_partial_results(mode, processes, shared_data, elapsed_time, output=Non
         date=str(datetime.now())
         print(date[0:10] + "_" + date[11:19], str(int(elapsed_time*1e6)), str(total_words), str(finished), str(processes-finished))
 
-def print_aggregated_results(result_queue):
-    results = {}
-    while not result_queue.empty():
-        result_type, result_data, message = result_queue.get()
-        results[result_type] = results.get(result_type, []) + [(result_data, message)]
-
+def print_aggregated_results(shared_data, result_queue, mode):
     print("\nAggregated Results:")
-    for result_type, result_list in results.items():
-        print(f"{result_type.capitalize()} Results:")
-        for result_data, message in result_list:
-            print(f"{message}: {result_data}")
-        print()
+    if mode == "t":
+        print("Número total de Palavras encontradas:", shared_data.value)
+        
+    elif mode == "u":
+        result_data = set()
+        while not result_queue.empty():
+            result_data.update(result_queue.get())
+        print("Número total de Palavras Únicas encontradas:", len(result_data))
+        
+    elif mode == "o":
+        results_dict = {}
+        while not result_queue.empty():
+            words = result_queue.get()
+            for word in words.keys():
+                results_dict[word] = results_dict.get(word, 0) + words[word]
+        results = []
+        for word, count in results_dict.items():
+                results.append((word, count))
+        print("Número de Ocorrências de cada Palavra:", results)
+
     
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Tool for Processing Arguments")
