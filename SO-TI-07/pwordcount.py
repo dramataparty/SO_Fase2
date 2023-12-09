@@ -57,10 +57,7 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
 def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess, lock):
     for idx in range(start_idx, end_idx):
         file = input_files[idx]
-        if end_idx - start_idx == 1:
-            print(f"Process {pid} is working on the file {file}")
-        else:
-            print(f"Process {pid} is working on files {input_files[start_idx]} to {input_files[end_idx - 1]}")
+        print(f"Process {pid} is working on the file {file}")
 
         if mode == "t":
             word_counter(file, n, n_now, shared_data, result_queue, lock)
@@ -84,6 +81,7 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
 
     num_files = len(input_files)
     num_processes = min(parallel, num_files)
+    num_text = max(parallel, num_files)
     
 
     processes = []
@@ -108,13 +106,13 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
         while True:
             current_time = time.time() - last_time
             if current_time >= interval:
-                if num_processes == finished:
+                if num_text == finished:
                     k += 1
                     if k == 2:
                         break
                 last_time = time.time()
                 elapsed_time = current_time - start_time + last_time
-                print_partial_results(mode, num_processes, shared_data, elapsed_time, log_file)
+                print_partial_results(mode, num_text, shared_data, elapsed_time, log_file)
                       
     print_aggregated_results(result_queue)
 
