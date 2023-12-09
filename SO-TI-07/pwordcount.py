@@ -38,6 +38,7 @@ def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     unique_words = set(words)
     shared_data[nbProcess] += len(unique_words)
     result_queue.put(('unique_word_counter', len(unique_words), f"{len(unique_words)} palavras únicas entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    os.kill(os.getppid(), signal.SIGUSR1)
 
 def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
@@ -51,6 +52,7 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
 
     shared_data[nbProcess] += len(word_count)
     result_queue.put(('occurrence_counter', results, f"Ocorrências de Palavras Únicas/Diferentes entre as linhas {int((n_now-1)*count_lines(file)/n)} e {int(n_now*count_lines(file)/n)} de {file}"))
+    os.kill(os.getppid(), signal.SIGUSR1)
 
 def worker(start_idx, end_idx, pid, n, n_now, input_files, mode, shared_data, result_queue, nbProcess, lock):
     for idx in range(start_idx, end_idx):
@@ -82,6 +84,7 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
 
     num_files = len(input_files)
     num_processes = min(parallel, num_files)
+    
 
     processes = []
     for i in range(num_processes):
@@ -98,9 +101,6 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
     signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes))
     signal.signal(signal.SIGUSR1, signal_counter)
 
-    # for pid in processes:
-    #     os.waitpid(pid, 0)
-
     if interval > 0:
         last_time = time.time()
         elapsed_time = 0
@@ -108,15 +108,14 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
         while True:
             current_time = time.time() - last_time
             if current_time >= interval:
-                if parallel == finished:
+                if num_processes == finished:
                     k += 1
                     if k == 2:
                         break
                 last_time = time.time()
                 elapsed_time = current_time - start_time + last_time
-                print_partial_results(mode, parallel, shared_data, elapsed_time, log_file)
-            
-            
+                print_partial_results(mode, num_processes, shared_data, elapsed_time, log_file)
+                      
     print_aggregated_results(result_queue)
 
 def signal_handler(signum, frame, processes):
@@ -129,7 +128,7 @@ def signal_counter(signum, frame):
     global finished
     finished += 1
 
-def print_partial_results(mode, parallel, shared_data, elapsed_time, output=None):
+def print_partial_results(mode, processes, shared_data, elapsed_time, output=None):
     total_words = 0
     if mode == "t":
         total_words += shared_data.value
@@ -143,11 +142,11 @@ def print_partial_results(mode, parallel, shared_data, elapsed_time, output=None
             log.write(str(int(elapsed_time*1e6)) + " ")
             log.write(str(total_words) + " ")
             log.write(str(finished) + " ")
-            log.write(str(parallel-finished) + "\n")
+            log.write(str(processes-finished) + "\n")
             
     else:
         date=str(datetime.now())
-        print(date[0:10] + "_" + date[11:19], str(int(elapsed_time*1e6)), str(total_words), str(finished), str(parallel-finished))
+        print(date[0:10] + "_" + date[11:19], str(int(elapsed_time*1e6)), str(total_words), str(finished), str(processes-finished))
 
 def print_aggregated_results(result_queue):
     results = {}
@@ -159,7 +158,7 @@ def print_aggregated_results(result_queue):
     for result_type, result_list in results.items():
         print(f"{result_type.capitalize()} Results:")
         for result_data, message in result_list:
-            print(f"{message}")
+            print(f"{message}: {result_data}")
         print()
     
 def parse_arguments():
