@@ -8,11 +8,12 @@
 2) ./pwordcount -m u -p 1 teste2.txt
 3) ./pwordcount -m o -p 1 midsummer.txt 
 4) ./pwordcount -m t -p 4 midsummer.txt teste1.txt
-4) ./pwordcount -m t -p 2 midsummer.txt
+5) ./pwordcount -m t -p 2 midsummer.txt
+7) ./pwordcount -m t -p 1 -i 1 -l count.log teste1.txt
+
 
 ### Limitações da implementação:
 - Nao divide ficheiros se o numero de ficheiros dado for superior a 1;
-- Não há comunicação entre processos, cada processo imprime o que lhe foi pedido.
 
 ### Abordagem para a divisão dos ficheiros:
 - Se a paralelização for igual ou maior do que o número de ficheiros introduzidos,

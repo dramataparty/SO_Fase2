@@ -35,7 +35,8 @@ def word_counter(file, n, n_now, shared_data, lock):
 def unique_word_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     words = file_divider(file, n, n_now)
     unique_words = set(words)
-    shared_data[nbProcess] += len(unique_words)
+    for word in unique_words:
+        shared_data[nbProcess] += 1
     result_queue.put(unique_words)
     os.kill(os.getppid(), signal.SIGUSR1)
 
@@ -44,8 +45,8 @@ def occurrence_counter(file, n, n_now, shared_data, result_queue, nbProcess):
     word_count = {}
     for word in words:
         word_count[word] = word_count.get(word, 0) + 1
-    
-    shared_data[nbProcess] += len(word_count)
+    for word in word_count:
+        shared_data[nbProcess] += 1
     result_queue.put(word_count)
     os.kill(os.getppid(), signal.SIGUSR1)
 
@@ -101,7 +102,7 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
             else:
                 processes.append(pid)
 
-    signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes))
+    signal.signal(signal.SIGINT, lambda signum, frame: signal_handler(signum, frame, processes, shared_data, result_queue, mode))
     signal.signal(signal.SIGUSR1, signal_counter)
 
     if interval > 0:
@@ -121,10 +122,13 @@ def diveconquer(input_files, mode, parallel, interval, log_file):
                       
     print_aggregated_results(shared_data, result_queue, mode)
 
-def signal_handler(signum, frame, processes):
+def signal_handler(signum, frame, processes, shared_data, result_queue, mode):
     print("\nReceived SIGINT. Waiting for child processes to finish...")
     for pid in processes:
         os.kill(pid, signal.SIGTERM)
+    
+    print_aggregated_results(shared_data, result_queue, mode)
+        
     sys.exit(0)
 
 def signal_counter(signum, frame):
