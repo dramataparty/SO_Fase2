@@ -16,19 +16,11 @@
 
 ### Abordagem para a divisão dos ficheiros:
 - Se a paralelização for igual ou maior do que o número de ficheiros introduzidos,
-o programa atribui a cada processo um único ficheiro, eliminando processos extras;
+o programa atribui a cada processo um único ficheiro, com o último sendo dividido entre os processos restantes
 - Se a paralelização for menor do que o número de ficheiros introduzidos, a divisão
 é feita da forma mais equitativa possível entre os processos disponíveis;
 - No caso excepcional de apenas um ficheiro ser introduzido e a paralelização for 
 superior a 1, o programa divide o ficheiro em função do número de processos disponíveis,
 ficando cada processo com uma quantidade equitativa de conteúdo para ler.
 
-### Outras informações pertinentes:
-- special_cleaner: limpa caracteres especiais das palavras
-- count_lines: conta o número de linhas de um ficheiro
-- file_divider: divide o conteúdo de um ficheiro por cada processo
-- word_counter: conta o número de palavras de um (excerto) de um ficheiro
-- unique_word_counter: conta o número de palavras únicas de um (excerto)
-de um ficheiro
-- occurence_counter: conta o número de ocorrências de cada palavra de um
-(excerto) de um ficheiro
+
